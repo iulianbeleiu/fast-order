@@ -14,22 +14,13 @@
                         {% endblock %}
 
                         {% block page_fast_order_form %}
-                            <form>
+                            <form class="js-article-search-form" data-fast-order-search="true" data-article-search-url="{{ path('frontend.search.suggest') }}?search=">
                                 {% block page_fast_order_table_header %}
                                     {% sw_include 'storefront/component/fast-order/header.html.twig' %}
                                 {% endblock %}
 
                                 {% block page_fast_order_table_items %}
                                     {% sw_include 'storefront/component/fast-order/item.html.twig' %}
-
-                                    <div class="form-group row">
-                                        <div class="col-8">
-                                            <input type="text" class="form-control" id="article2" placeholder="Search article...">
-                                        </div>
-                                        <div class="col-4">
-                                            <input type="number" class="form-control" id="quantity2" placeholder="Quantity">
-                                        </div>
-                                    </div>
                                 {% endblock %}
 
                                 {% block page_fast_order_form_total_amount %}
