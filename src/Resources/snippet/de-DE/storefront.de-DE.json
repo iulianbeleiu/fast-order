@@ -1,0 +1,16 @@
+{
+  "FastOrder": {
+    "card": {
+      "articlesTitle": "Enter articles",
+      "text": "Please enter the articles and quantities you want to order. The availability of the article is checked and displayed directly while typing. You can enter all data completely via keyboard. In the result list, you can navigate through the results with the arrow up and arrow down key. With the enter key, you can select the correct entry."
+    },
+    "form": {
+      "totalAmount": "Total amount:",
+      "submitButtonTitle": "Add to shopping list"
+    },
+    "table": {
+      "headerArticleTitle": "Article",
+      "headerQuantityTitle": "Quantity"
+    }
+  }
+}

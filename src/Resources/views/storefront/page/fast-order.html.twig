@@ -1,5 +1,55 @@
 {% sw_extends '@Storefront/storefront/base.html.twig' %}
 
 {% block base_content %}
-    <h1>{{ example }}</h1>
+    {% block page_fast_order_product_table %}
+        <div class="fast-order">
+            {% block page_fast_order_table_container %}
+                <div class="card">
+                    <div class="card-body">
+                        {% block page_fast_order_card_description %}
+                            <h5 class="card-title">{{ "FastOrder.card.articlesTitle"|trans|sw_sanitize }}</h5>
+                            <p class="card-text">
+                                {{ "FastOrder.card.text"|trans|sw_sanitize }}
+                            </p>
+                        {% endblock %}
+
+                        {% block page_fast_order_form %}
+                            <form>
+                                {% block page_fast_order_table_header %}
+                                    {% sw_include 'storefront/component/fast-order/header.html.twig' %}
+                                {% endblock %}
+
+                                {% block page_fast_order_table_items %}
+                                    {% sw_include 'storefront/component/fast-order/item.html.twig' %}
+
+                                    <div class="form-group row">
+                                        <div class="col-8">
+                                            <input type="text" class="form-control" id="article2" placeholder="Search article...">
+                                        </div>
+                                        <div class="col-4">
+                                            <input type="number" class="form-control" id="quantity2" placeholder="Quantity">
+                                        </div>
+                                    </div>
+                                {% endblock %}
+
+                                {% block page_fast_order_form_total_amount %}
+                                    <div class="form-group row">
+                                        <div class="col-8">
+                                        </div>
+                                        <div class="col-4 text-right">
+                                            <p class="form-control-plaintext">{{ "FastOrder.form.totalAmount"|trans|sw_sanitize }} €495.95</p>
+                                        </div>
+                                    </div>
+                                {% endblock %}
+
+                                {% block page_fast_order_form_add_to_cart %}
+                                    <button type="button" class="btn btn-primary">{{ "FastOrder.form.submitButtonTitle"|trans|sw_sanitize }}</button>
+                                {% endblock %}
+                            </form>
+                        {% endblock %}
+                    </div>
+                </div>
+            {% endblock %}
+        </div>
+    {% endblock %}
 {% endblock %}
