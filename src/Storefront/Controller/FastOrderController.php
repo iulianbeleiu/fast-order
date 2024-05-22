@@ -57,10 +57,17 @@ class FastOrderController extends StorefrontController
 	{
 		return Profiler::trace('fast-order::add-to-cart', function () use ($request, $context) {
 			$productNumbers = (array) $request->get('productNumbers');
+			$quantities = (array) $request->get('quantities');
 
 			if (!$productNumbers) {
 				throw RoutingException::missingRequestParameter('productNumbers');
 			}
+
+			if (!$quantities) {
+				throw RoutingException::missingRequestParameter('quantities');
+			}
+
+			$productsWithQuantities = array_combine($productNumbers, $quantities);
 
 			$criteria = new Criteria();
 			$criteria->addFilter(new EqualsAnyFilter('productNumber', $productNumbers));
@@ -69,9 +76,9 @@ class FastOrderController extends StorefrontController
 				new EqualsFilter('childCount', null),
 			]));
 
-			$productIds = $this->productListRoute->load($criteria, $context)->getProducts()->getIds();
+			$products = $this->productListRoute->load($criteria, $context)->getProducts();
 
-			if (empty($productIds)) {
+			if ($products->count() === 0) {
 				$this->addFlash(self::DANGER, $this->trans(
 					'FastOrder.cart.noProductsFound'
 				));
@@ -82,8 +89,12 @@ class FastOrderController extends StorefrontController
 			$cart = $this->cartService->getCart($context->getToken(), $context);
 
 			$lineItems = [];
-			foreach ($productIds as $productId) {
-				$lineItems[] = $this->productLineItemFactory->create(['id' => $productId, 'referencedId' => $productId], $context);
+			foreach ($products as $product) {
+				$lineItems[] = $this->productLineItemFactory->create([
+					'id' => $product->getId(),
+					'referencedId' => $product->getId(),
+					'quantity' => (int) $productsWithQuantities[$product->getProductNumber()] ?? 1
+				], $context);
 			}
 
 			$cart = $this->cartService->add($cart, $lineItems, $context);
