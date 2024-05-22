@@ -161,11 +161,13 @@ export default class ArticleSearchPlugin extends Plugin {
     _handleQuantityChange(e) {
         let quantity = e.currentTarget.value;
         let itemTotal =  this._itemPrice * quantity;
-        this._selectedArticlePrice.setAttribute(this.options.itemTotalDataAttribute, itemTotal)
+        if (!isNaN(itemTotal)) {
+            this._selectedArticlePrice.setAttribute(this.options.itemTotalDataAttribute, itemTotal)
 
-        this._selectedArticlePrice.innerHTML = `${this._currencySymbol + itemTotal.toFixed(2)}`;
+            this._selectedArticlePrice.innerHTML = `${this._currencySymbol + itemTotal.toFixed(2)}`;
 
-        this._calculateTotalAmount();
+            this._calculateTotalAmount();
+        }
     }
 
     _calculateTotalAmount() {
