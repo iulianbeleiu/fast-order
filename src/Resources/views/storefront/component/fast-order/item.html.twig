@@ -9,8 +9,8 @@
 
         {% block component_item_fast_order_article_col_quantity %}
             <div class="col-4">
-                <input type="number" class="form-control" id="quantity" placeholder="Quantity">
-                <p class="form-control-plaintext js-selected-article-price"></p>
+                <input type="number" class="form-control js-quantity" id="quantity" placeholder="Quantity">
+                <p class="form-control-plaintext js-selected-article-price" data-item-total="0"></p>
             </div>
         {% endblock %}
     </div>

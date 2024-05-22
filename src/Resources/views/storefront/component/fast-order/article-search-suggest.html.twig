@@ -22,8 +22,10 @@
                                        title="{{ product.translated.name }}"
                                        class="search-suggest-product-link"
                                        data-article-number="{{ product.productNumber }}"
-                                       data-article-price="{{ price.unitPrice|currency }}"
+                                       data-article-price-formatted="{{ price.unitPrice|currency }}"
+                                       data-article-price-raw="{{ price.unitPrice }}"
                                        data-article-title="{{ product.translated.name }}"
+                                       data-currency-symbol="{{ context.currency.symbol }}"
                                        data-article-select="true">
                                         <div class="row align-items-center g-0">
 

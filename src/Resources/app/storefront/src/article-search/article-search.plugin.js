@@ -16,12 +16,19 @@ export default class ArticleSearchPlugin extends Plugin {
         articleSearchResultItemSelector: '.js-article-item',
         articleSearchResultArticleLink: '.search-suggest-product-link',
 
+        itemQuantityInputSelector: '.js-quantity',
+
         searchResultArticleNumberDataAttribute: 'data-article-number',
         searchResultArticleTitleDataAttribute: "data-article-title",
-        searchResultArticlePriceDataAttribute: 'data-article-price',
+        searchResultArticlePriceFormattedDataAttribute: 'data-article-price-formatted',
+        searchResultArticlePriceDataAttribute: 'data-article-price-raw',
+        searchResultArticleCurrencySymbolDataAttribute: 'data-currency-symbol',
+        itemTotalDataAttribute: 'data-item-total',
 
         selectedArticleTitleSelector: ".js-selected-article-title",
         selectedArticlePriceSelector: ".js-selected-article-price",
+
+        totalAmountSelector: '.js-total-amount',
 
         articleSearchDelay: 250,
         articleSearchMinChars: 3,
@@ -29,7 +36,8 @@ export default class ArticleSearchPlugin extends Plugin {
     
     init() {
         try {
-            this._inputField = DomAccess.querySelector(this.el, this.options.articleSearchInputFieldSelector);
+            this._searchField = DomAccess.querySelector(this.el, this.options.articleSearchInputFieldSelector);
+            this._quantityField = DomAccess.querySelector(this.el, this.options.itemQuantityInputSelector);
             this._articleSearchUrl = DomAccess.getAttribute(this.el, this.options.articleSearchUrlDataAttribute);
 
             this._selectedArticleTitle = DomAccess.querySelector(this.el, this.options.selectedArticleTitleSelector);
@@ -43,7 +51,7 @@ export default class ArticleSearchPlugin extends Plugin {
 
         // initialize the arrow navigation
         this._navigationHelper = new ArrowNavigationHelper(
-            this._inputField,
+            this._searchField,
             this.options.articleSearchResultSelector,
             this.options.articleSearchResultItemSelector,
             true,
@@ -57,7 +65,7 @@ export default class ArticleSearchPlugin extends Plugin {
     }
 
     _registerEvents() {
-        this._inputField.addEventListener(
+        this._searchField.addEventListener(
             'input',
             Debouncer.debounce(this._handleInputEvent.bind(this), this.options.articleSearchDelay),
             {
@@ -65,10 +73,15 @@ export default class ArticleSearchPlugin extends Plugin {
                 passive: true,
             },
         );
+
+        this._quantityField.addEventListener(
+            'input',
+            this._handleQuantityChange.bind(this)
+        );
     }
 
     _handleInputEvent() {
-        const value = this._inputField.value.trim();
+        const value = this._searchField.value.trim();
 
         // stop search if minimum input value length has not been reached
         if (value.length < this.options.articleSearchMinChars) {
@@ -130,8 +143,43 @@ export default class ArticleSearchPlugin extends Plugin {
     _handleArticleClickEvent(e) {
         e.preventDefault();
 
-        this._inputField.value = DomAccess.getAttribute(e.currentTarget, this.options.searchResultArticleNumberDataAttribute);
+        this._searchField.value = DomAccess.getAttribute(e.currentTarget, this.options.searchResultArticleNumberDataAttribute);
         this._selectedArticleTitle.innerHTML = DomAccess.getAttribute(e.currentTarget, this.options.searchResultArticleTitleDataAttribute);
-        this._selectedArticlePrice.innerHTML = DomAccess.getAttribute(e.currentTarget, this.options.searchResultArticlePriceDataAttribute);
+        this._selectedArticlePrice.innerHTML = DomAccess.getAttribute(e.currentTarget, this.options.searchResultArticlePriceFormattedDataAttribute);
+
+        this._itemPrice =  DomAccess.getAttribute(e.currentTarget, this.options.searchResultArticlePriceDataAttribute);
+        this._currencySymbol =  DomAccess.getAttribute(e.currentTarget, this.options.searchResultArticleCurrencySymbolDataAttribute);
+
+        this._quantityField.value = 1;
+
+        this._selectedArticlePrice.setAttribute(this.options.itemTotalDataAttribute, this._itemPrice);
+
+        this._calculateTotalAmount();
+    }
+
+    _handleQuantityChange(e) {
+        let quantity = e.currentTarget.value;
+        let itemTotal =  this._itemPrice * quantity;
+        this._selectedArticlePrice.setAttribute(this.options.itemTotalDataAttribute, itemTotal)
+
+        this._selectedArticlePrice.innerHTML = `${this._currencySymbol + itemTotal.toFixed(2)}`;
+
+        this._calculateTotalAmount();
+    }
+
+    _calculateTotalAmount() {
+        const elements = DomAccess.querySelectorAll(document, this.options.selectedArticlePriceSelector);
+
+        let totalAmount = 0;
+
+        elements.forEach(element => {
+            const itemTotal = parseFloat(element.getAttribute(this.options.itemTotalDataAttribute));
+
+            if (!isNaN(itemTotal)) {
+                totalAmount += itemTotal;
+            }
+        });
+
+        DomAccess.querySelector(document, this.options.totalAmountSelector).innerHTML = this._currencySymbol + totalAmount.toFixed(2);
     }
 }
