@@ -100,6 +100,7 @@ export default class ArticleSearchPlugin extends Plugin {
         this._client.get(url, (response) => {
             // remove existing search results first
             this._clearSuggestResults();
+            this._clearSelectedItem();
 
             // attach search results to the DOM
             this.el.insertAdjacentHTML('beforeend', response);
@@ -181,5 +182,18 @@ export default class ArticleSearchPlugin extends Plugin {
         });
 
         DomAccess.querySelector(document, this.options.totalAmountSelector).innerHTML = this._currencySymbol + totalAmount.toFixed(2);
+    }
+
+    _clearSelectedItem() {
+        this._selectedArticleTitle.innerHTML = "";
+        this._selectedArticlePrice.innerHTML = "";
+
+        this._selectedArticlePrice.setAttribute(this.options.itemTotalDataAttribute, 0);
+
+        this._selectedArticlePrice.setAttribute(this.options.itemTotalDataAttribute, 0)
+
+        this._selectedArticlePrice.innerHTML = "";
+
+        this._calculateTotalAmount();
     }
 }
