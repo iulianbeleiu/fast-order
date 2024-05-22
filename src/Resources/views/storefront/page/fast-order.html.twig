@@ -14,14 +14,23 @@
                         {% endblock %}
 
                         {% block page_fast_order_form %}
-                            <form class="js-article-search-form">
+                            <form action="{{ path('frontend.fast.order.add-to-cart') }}"
+                                method="post"
+                                class="js-article-search-form">
+
+                                {% block page_fast_order_table_redirect %}
+                                    <input type="hidden"
+                                           name="redirectTo"
+                                           value="frontend.checkout.cart.page">
+                                {% endblock %}
+
                                 {% block page_fast_order_table_header %}
-                                    {% sw_include 'storefront/component/fast-order/header.html.twig' %}
+                                    {% sw_include '@FastOrder/storefront/component/fast-order/header.html.twig' %}
                                 {% endblock %}
 
                                 {% block page_fast_order_table_items %}
                                     {% for i in 0..10 %}
-                                        {% sw_include 'storefront/component/fast-order/item.html.twig' %}
+                                        {% sw_include '@FastOrder/storefront/component/fast-order/item.html.twig' %}
                                     {% endfor %}
                                 {% endblock %}
 
@@ -36,7 +45,7 @@
                                 {% endblock %}
 
                                 {% block page_fast_order_form_add_to_cart %}
-                                    <button type="button" class="btn btn-primary">{{ "FastOrder.form.submitButtonTitle"|trans|sw_sanitize }}</button>
+                                    <button type="submit" class="btn btn-primary">{{ "FastOrder.form.submitButtonTitle"|trans|sw_sanitize }}</button>
                                 {% endblock %}
                             </form>
                         {% endblock %}

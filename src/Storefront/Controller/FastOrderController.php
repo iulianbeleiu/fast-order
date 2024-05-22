@@ -2,6 +2,17 @@
 
 namespace FastOrder\Storefront\Controller;
 
+use Shopware\Core\Checkout\Cart\Cart;
+use Shopware\Core\Checkout\Cart\Error\Error;
+use Shopware\Core\Checkout\Cart\LineItemFactoryHandler\ProductLineItemFactory;
+use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
+use Shopware\Core\Content\Product\SalesChannel\ProductListRoute;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
+use Shopware\Core\Framework\Routing\RoutingException;
+use Shopware\Core\Profiling\Profiler;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\StorefrontController;
 use Shopware\Storefront\Page\Suggest\SuggestPageLoadedHook;
@@ -14,7 +25,10 @@ use Symfony\Component\Routing\Annotation\Route;
 class FastOrderController extends StorefrontController
 {
 	public function __construct(
-		private readonly SuggestPageLoader $suggestPageLoader
+		private readonly SuggestPageLoader $suggestPageLoader,
+		private readonly ProductListRoute $productListRoute,
+		private readonly ProductLineItemFactory $productLineItemFactory,
+		private readonly CartService $cartService
 	) {
 	}
 
@@ -23,14 +37,12 @@ class FastOrderController extends StorefrontController
         name: 'frontend.fast.order',
         methods: ['GET']
     )]
-    public function fastOrderPage(Request $request, SalesChannelContext $context): Response
+    public function fastOrderPage(): Response
     {
-        return $this->renderStorefront('@FastOrder/storefront/page/fast-order.html.twig', [
-            'example' => 'Hello world'
-        ]);
+        return $this->renderStorefront('@FastOrder/storefront/page/fast-order.html.twig');
     }
 
-	#[Route(path: '/fast-order-article-search', name: 'frontend.fast.order.article.suggest', defaults: ['XmlHttpRequest' => true, '_httpCache' => true], methods: ['GET'])]
+	#[Route(path: '/fast-order/article-search', name: 'frontend.fast.order.article.suggest', defaults: ['XmlHttpRequest' => true, '_httpCache' => true], methods: ['GET'])]
 	public function suggest(SalesChannelContext $context, Request $request): Response
 	{
 		$page = $this->suggestPageLoader->load($request, $context);
@@ -38,5 +50,60 @@ class FastOrderController extends StorefrontController
 		$this->hook(new SuggestPageLoadedHook($page, $context));
 
 		return $this->renderStorefront('@FastOrder/storefront/component/fast-order/article-search-suggest.html.twig', ['page' => $page]);
+	}
+
+	#[Route(path: '/fast-order/product/add-to-cart', name: 'frontend.fast.order.add-to-cart', methods: ['POST'])]
+	public function addProductByNumber(Request $request, SalesChannelContext $context): Response
+	{
+		return Profiler::trace('fast-order::add-to-cart', function () use ($request, $context) {
+			$productNumbers = (array) $request->get('productNumbers');
+
+			if (!$productNumbers) {
+				throw RoutingException::missingRequestParameter('productNumbers');
+			}
+
+			$criteria = new Criteria();
+			$criteria->addFilter(new EqualsAnyFilter('productNumber', $productNumbers));
+			$criteria->addFilter(new MultiFilter(MultiFilter::CONNECTION_OR, [
+				new EqualsFilter('childCount', 0),
+				new EqualsFilter('childCount', null),
+			]));
+
+			$productIds = $this->productListRoute->load($criteria, $context)->getProducts()->getIds();
+
+			if (empty($productIds)) {
+				$this->addFlash(self::DANGER, $this->trans(
+					'FastOrder.cart.noProductsFound'
+				));
+
+				return $this->createActionResponse($request);
+			}
+
+			$cart = $this->cartService->getCart($context->getToken(), $context);
+
+			$lineItems = [];
+			foreach ($productIds as $productId) {
+				$lineItems[] = $this->productLineItemFactory->create(['id' => $productId, 'referencedId' => $productId], $context);
+			}
+
+			$cart = $this->cartService->add($cart, $lineItems, $context);
+
+			if (!$this->traceErrors($cart)) {
+				$this->addFlash(self::SUCCESS, $this->trans('checkout.addToCartSuccess', ['%count%' => count($lineItems)]));
+			}
+
+			return $this->createActionResponse($request);
+		});
+	}
+
+	private function traceErrors(Cart $cart): bool
+	{
+		if ($cart->getErrors()->count() <= 0) {
+			return false;
+		}
+
+		$this->addCartErrors($cart, fn (Error $error) => $error->isPersistent());
+
+		return true;
 	}
 }

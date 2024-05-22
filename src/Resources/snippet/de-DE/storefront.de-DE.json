@@ -11,6 +11,9 @@
     "table": {
       "headerArticleTitle": "Article",
       "headerQuantityTitle": "Quantity"
+    },
+    "cart": {
+      "noProductsFound": "No products found."
     }
   }
 }
