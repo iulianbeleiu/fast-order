@@ -12,6 +12,7 @@
             <argument type="service" id="Shopware\Core\Content\Product\SalesChannel\ProductListRoute"/>
             <argument type="service" id="Shopware\Core\Checkout\Cart\LineItemFactoryHandler\ProductLineItemFactory"/>
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService"/>
+            <argument type="service" id="fast_order_line_item.repository"/>
 
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
@@ -19,10 +20,6 @@
             <call method="setTwig">
                 <argument type="service" id="twig"/>
             </call>
-        </service>
-
-        <service id="FastOrder\Core\Content\Example\SalesChannel\ExampleRoute">
-            <argument type="service" id="product.repository"/>
         </service>
 
         <service id="FastOrder\Core\Content\FastOrderLineItem\FastOrderLineItemDefinition">

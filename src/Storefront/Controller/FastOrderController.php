@@ -7,6 +7,7 @@ use Shopware\Core\Checkout\Cart\Error\Error;
 use Shopware\Core\Checkout\Cart\LineItemFactoryHandler\ProductLineItemFactory;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
 use Shopware\Core\Content\Product\SalesChannel\ProductListRoute;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
@@ -28,7 +29,8 @@ class FastOrderController extends StorefrontController
 		private readonly SuggestPageLoader $suggestPageLoader,
 		private readonly ProductListRoute $productListRoute,
 		private readonly ProductLineItemFactory $productLineItemFactory,
-		private readonly CartService $cartService
+		private readonly CartService $cartService,
+		private readonly EntityRepository $fastOrderLineItemRepository
 	) {
 	}
 
@@ -89,17 +91,27 @@ class FastOrderController extends StorefrontController
 			$cart = $this->cartService->getCart($context->getToken(), $context);
 
 			$lineItems = [];
+			$fastOrderLineItems = [];
 			foreach ($products as $product) {
+				$quantity = (int) $productsWithQuantities[$product->getProductNumber()] ?? 1;
 				$lineItems[] = $this->productLineItemFactory->create([
 					'id' => $product->getId(),
 					'referencedId' => $product->getId(),
-					'quantity' => (int) $productsWithQuantities[$product->getProductNumber()] ?? 1
+					'quantity' => $quantity,
 				], $context);
+
+				$fastOrderLineItems[] = [
+					'productNumber' => $product->getProductNumber(),
+					'quantity' => $quantity,
+					'sessionId' => $request->getSession()->getId(),
+				];
 			}
 
 			$cart = $this->cartService->add($cart, $lineItems, $context);
 
 			if (!$this->traceErrors($cart)) {
+				$this->fastOrderLineItemRepository->upsert($fastOrderLineItems, $context->getContext());
+
 				$this->addFlash(self::SUCCESS, $this->trans('checkout.addToCartSuccess', ['%count%' => count($lineItems)]));
 			}
 
