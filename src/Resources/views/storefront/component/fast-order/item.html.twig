@@ -3,14 +3,14 @@
         {% block component_item_fast_order_article_col_title %}
             <div class="col-8">
                 <input type="search" class="form-control" id="article" name="productNumbers[]" placeholder="Search article...">
-                <p class="form-control-plaintext js-selected-article-title"></p>
+                <p class="form-control-plaintext js-selected-article-title d-none"></p>
             </div>
         {% endblock %}
 
         {% block component_item_fast_order_article_col_quantity %}
             <div class="col-4">
                 <input type="number" class="form-control js-quantity" id="quantity" min="1" placeholder="Quantity">
-                <p class="form-control-plaintext js-selected-article-price" data-item-total="0"></p>
+                <p class="form-control-plaintext js-selected-article-price d-none" data-item-total="0"></p>
             </div>
         {% endblock %}
     </div>

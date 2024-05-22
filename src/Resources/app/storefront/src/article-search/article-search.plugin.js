@@ -148,6 +148,9 @@ export default class ArticleSearchPlugin extends Plugin {
         this._selectedArticleTitle.innerHTML = DomAccess.getAttribute(e.currentTarget, this.options.searchResultArticleTitleDataAttribute);
         this._selectedArticlePrice.innerHTML = DomAccess.getAttribute(e.currentTarget, this.options.searchResultArticlePriceFormattedDataAttribute);
 
+        this._selectedArticleTitle.classList.remove('d-none');
+        this._selectedArticlePrice.classList.remove('d-none');
+
         this._itemPrice =  DomAccess.getAttribute(e.currentTarget, this.options.searchResultArticlePriceDataAttribute);
         this._currencySymbol =  DomAccess.getAttribute(e.currentTarget, this.options.searchResultArticleCurrencySymbolDataAttribute);
 
@@ -189,12 +192,10 @@ export default class ArticleSearchPlugin extends Plugin {
     _clearSelectedItem() {
         this._selectedArticleTitle.innerHTML = "";
         this._selectedArticlePrice.innerHTML = "";
-
         this._selectedArticlePrice.setAttribute(this.options.itemTotalDataAttribute, 0);
 
-        this._selectedArticlePrice.setAttribute(this.options.itemTotalDataAttribute, 0)
-
-        this._selectedArticlePrice.innerHTML = "";
+        this._selectedArticleTitle.classList.add('d-none');
+        this._selectedArticlePrice.classList.add('d-none');
 
         this._calculateTotalAmount();
     }
