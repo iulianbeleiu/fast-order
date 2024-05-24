@@ -1,7 +1,7 @@
 {% block component_fast_order_header %}
     <div class="row">
         {% block component_fast_order_header_article_title %}
-            <div class="col-8">
+            <div class="col-12 col-md-8">
                 <div class="card-title">
                     {{ "FastOrder.table.headerArticleTitle"|trans|sw_sanitize }}
                 </div>
@@ -9,11 +9,11 @@
         {% endblock %}
 
         {% block component_fast_order_header_article_quantity %}
-        <div class="col-4">
-            <div class="card-title">
-                {{ "FastOrder.table.headerQuantityTitle"|trans|sw_sanitize }}
+            <div class="col-12 col-md-4">
+                <div class="card-title">
+                    {{ "FastOrder.table.headerQuantityTitle"|trans|sw_sanitize }}
+                </div>
             </div>
-        </div>
         {% endblock %}
     </div>
 {% endblock %}
