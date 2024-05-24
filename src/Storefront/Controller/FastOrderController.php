@@ -44,6 +44,7 @@ class FastOrderController extends StorefrontController
     public function fastOrderPage(Request $request, SalesChannelContext $salesChannelContext): Response
     {
 		$page = $this->genericPageLoader->load($request, $salesChannelContext);
+
         return $this->renderStorefront('@FastOrder/storefront/page/fast-order.html.twig', ['page' => $page]);
     }
 
