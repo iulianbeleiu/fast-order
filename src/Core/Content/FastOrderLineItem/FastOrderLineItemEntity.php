@@ -9,39 +9,51 @@ class FastOrderLineItemEntity extends Entity
 {
     use EntityIdTrait;
 
-    protected ?string $name;
+	protected string $sessionId;
 
-    protected ?string $description;
+	protected string $productNumber;
 
-    protected bool $active;
+	protected int $quantity;
 
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
+	protected ?string $comment;
 
-    public function setName(?string $name): void
-    {
-        $this->name = $name;
-    }
+	public function getSessionId(): string
+	{
+		return $this->sessionId;
+	}
 
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
+	public function setSessionId(string $sessionId): void
+	{
+		$this->sessionId = $sessionId;
+	}
 
-    public function setDescription(?string $description): void
-    {
-        $this->description = $description;
-    }
+	public function getProductNumber(): string
+	{
+		return $this->productNumber;
+	}
 
-    public function isActive(): bool
-    {
-        return $this->active;
-    }
+	public function setProductNumber(string $productNumber): void
+	{
+		$this->productNumber = $productNumber;
+	}
 
-    public function setActive(bool $active): void
-    {
-        $this->active = $active;
-    }
+	public function getQuantity(): int
+	{
+		return $this->quantity;
+	}
+
+	public function setQuantity(int $quantity): void
+	{
+		$this->quantity = $quantity;
+	}
+
+	public function getComment(): ?string
+	{
+		return $this->comment;
+	}
+
+	public function setComment(?string $comment): void
+	{
+		$this->comment = $comment;
+	}
 }
