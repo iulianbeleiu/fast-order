@@ -7,7 +7,7 @@
     <services>
 
         <service id="FastOrder\Storefront\Controller\FastOrderController" public="true">
-            <argument type="service" id="Shopware\Storefront\Page\Suggest\SuggestPageLoader"/>
+            <argument type="service" id="FastOrder\Page\ArticleSuggestPageLoader"/>
 
             <argument type="service" id="Shopware\Core\Content\Product\SalesChannel\ProductListRoute"/>
             <argument type="service" id="Shopware\Core\Checkout\Cart\LineItemFactoryHandler\ProductLineItemFactory"/>
@@ -24,6 +24,11 @@
 
         <service id="FastOrder\Core\Content\FastOrderLineItem\FastOrderLineItemDefinition">
             <tag name="shopware.entity.definition" entity="fast_order_line_item" />
+        </service>
+
+        <service id="FastOrder\Page\ArticleSuggestPageLoader">
+            <argument type="service" id="Shopware\Core\Content\Product\SalesChannel\Suggest\ProductSuggestRoute"/>
+            <argument type="service" id="Shopware\Storefront\Page\GenericPageLoader"/>
         </service>
 
     </services>
