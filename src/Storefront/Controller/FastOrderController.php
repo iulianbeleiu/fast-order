@@ -116,7 +116,10 @@ class FastOrderController extends StorefrontController
 		$fastOrderLineItems = [];
 
 		foreach ($products as $product) {
-			$quantity = (int) ($productsWithQuantities[$product->getProductNumber()] ?? 1);
+			$quantity = (int) (!empty($productsWithQuantities[$product->getProductNumber()] && is_numeric($productsWithQuantities[$product->getProductNumber()]))
+				? $productsWithQuantities[$product->getProductNumber()]
+				: 1
+			);
 			$lineItems[] = $this->productLineItemFactory->create([
 				'id' => $product->getId(),
 				'referencedId' => $product->getId(),
