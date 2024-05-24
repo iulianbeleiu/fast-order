@@ -18,6 +18,7 @@ use Shopware\Core\Framework\Routing\RoutingException;
 use Shopware\Core\Profiling\Profiler;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\StorefrontController;
+use Shopware\Storefront\Page\GenericPageLoader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -30,7 +31,8 @@ class FastOrderController extends StorefrontController
 		private readonly ProductListRoute $productListRoute,
 		private readonly ProductLineItemFactory $productLineItemFactory,
 		private readonly CartService $cartService,
-		private readonly EntityRepository $fastOrderLineItemRepository
+		private readonly EntityRepository $fastOrderLineItemRepository,
+		private readonly GenericPageLoader $genericPageLoader
 	) {
 	}
 
@@ -39,9 +41,10 @@ class FastOrderController extends StorefrontController
         name: 'frontend.fast.order',
         methods: ['GET']
     )]
-    public function fastOrderPage(): Response
+    public function fastOrderPage(Request $request, SalesChannelContext $salesChannelContext): Response
     {
-        return $this->renderStorefront('@FastOrder/storefront/page/fast-order.html.twig');
+		$page = $this->genericPageLoader->load($request, $salesChannelContext);
+        return $this->renderStorefront('@FastOrder/storefront/page/fast-order.html.twig', ['page' => $page]);
     }
 
 	#[Route(path: '/fast-order/article-search', name: 'frontend.fast.order.article.suggest', defaults: ['XmlHttpRequest' => true, '_httpCache' => true], methods: ['GET'])]
