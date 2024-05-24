@@ -6,6 +6,7 @@ use Shopware\Core\Checkout\Cart\Cart;
 use Shopware\Core\Checkout\Cart\Error\Error;
 use Shopware\Core\Checkout\Cart\LineItemFactoryHandler\ProductLineItemFactory;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
+use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\SalesChannel\ProductListRoute;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -61,62 +62,75 @@ class FastOrderController extends StorefrontController
 			$productNumbers = (array) $request->get('productNumbers');
 			$quantities = (array) $request->get('quantities');
 
-			if (!$productNumbers) {
-				throw RoutingException::missingRequestParameter('productNumbers');
-			}
-
-			if (!$quantities) {
-				throw RoutingException::missingRequestParameter('quantities');
-			}
+			$this->validateRequestParameters($productNumbers, $quantities);
 
 			$productsWithQuantities = array_combine($productNumbers, $quantities);
 
-			$criteria = new Criteria();
-			$criteria->addFilter(new EqualsAnyFilter('productNumber', $productNumbers));
-			$criteria->addFilter(new MultiFilter(MultiFilter::CONNECTION_OR, [
-				new EqualsFilter('childCount', 0),
-				new EqualsFilter('childCount', null),
-			]));
-
-			$products = $this->productListRoute->load($criteria, $context)->getProducts();
+			$products = $this->loadProducts($productNumbers, $context);
 
 			if ($products->count() === 0) {
-				$this->addFlash(self::DANGER, $this->trans(
-					'FastOrder.cart.noProductsFound'
-				));
-
+				$this->addFlash(self::DANGER, $this->trans('FastOrder.cart.noProductsFound'));
 				return $this->createActionResponse($request);
 			}
 
 			$cart = $this->cartService->getCart($context->getToken(), $context);
-
-			$lineItems = [];
-			$fastOrderLineItems = [];
-			foreach ($products as $product) {
-				$quantity = (int) $productsWithQuantities[$product->getProductNumber()] ?? 1;
-				$lineItems[] = $this->productLineItemFactory->create([
-					'id' => $product->getId(),
-					'referencedId' => $product->getId(),
-					'quantity' => $quantity,
-				], $context);
-
-				$fastOrderLineItems[] = [
-					'productNumber' => $product->getProductNumber(),
-					'quantity' => $quantity,
-					'sessionId' => $request->getSession()->getId(),
-				];
-			}
+			list($lineItems, $fastOrderLineItems) = $this->createLineItems($products, $productsWithQuantities, $context, $request);
 
 			$cart = $this->cartService->add($cart, $lineItems, $context);
 
 			if (!$this->traceErrors($cart)) {
 				$this->fastOrderLineItemRepository->upsert($fastOrderLineItems, $context->getContext());
-
 				$this->addFlash(self::SUCCESS, $this->trans('checkout.addToCartSuccess', ['%count%' => count($lineItems)]));
 			}
 
 			return $this->createActionResponse($request);
 		});
+	}
+
+	private function validateRequestParameters($productNumbers, $quantities):void
+	{
+		if (empty($productNumbers)) {
+			throw RoutingException::missingRequestParameter('productNumbers');
+		}
+
+		if (empty($quantities)) {
+			throw RoutingException::missingRequestParameter('quantities');
+		}
+	}
+
+	private function loadProducts($productNumbers, $context): ProductCollection
+	{
+		$criteria = new Criteria();
+		$criteria->addFilter(new EqualsAnyFilter('productNumber', $productNumbers));
+		$criteria->addFilter(new MultiFilter(MultiFilter::CONNECTION_OR, [
+			new EqualsFilter('childCount', 0),
+			new EqualsFilter('childCount', null),
+		]));
+
+		return $this->productListRoute->load($criteria, $context)->getProducts();
+	}
+
+	private function createLineItems($products, $productsWithQuantities, $context, $request): array
+	{
+		$lineItems = [];
+		$fastOrderLineItems = [];
+
+		foreach ($products as $product) {
+			$quantity = (int) ($productsWithQuantities[$product->getProductNumber()] ?? 1);
+			$lineItems[] = $this->productLineItemFactory->create([
+				'id' => $product->getId(),
+				'referencedId' => $product->getId(),
+				'quantity' => $quantity,
+			], $context);
+
+			$fastOrderLineItems[] = [
+				'productNumber' => $product->getProductNumber(),
+				'quantity' => $quantity,
+				'sessionId' => $request->getSession()->getId(),
+			];
+		}
+
+		return [$lineItems, $fastOrderLineItems];
 	}
 
 	private function traceErrors(Cart $cart): bool
