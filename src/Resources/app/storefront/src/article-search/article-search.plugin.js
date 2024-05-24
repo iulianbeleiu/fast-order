@@ -28,6 +28,8 @@ export default class ArticleSearchPlugin extends Plugin {
         selectedArticleTitleSelector: ".js-selected-article-title",
         selectedArticlePriceSelector: ".js-selected-article-price",
 
+        searchFieldSelector: '.js-search-field',
+
         totalAmountSelector: '.js-total-amount',
 
         articleSearchDelay: 250,
@@ -126,11 +128,6 @@ export default class ArticleSearchPlugin extends Plugin {
     }
 
     _onBodyClick(e) {
-        // early return if click target is the search form or any of it's children
-        if (e.target.closest(this.options.articleSearchSelector)) {
-            return;
-        }
-
         // early return if click target is the search result or any of it's children
         if (e.target.closest(this.options.articleSearchResultSelector)) {
             return;
