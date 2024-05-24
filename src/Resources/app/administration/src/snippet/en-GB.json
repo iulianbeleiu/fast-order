@@ -1,0 +1,18 @@
+{
+    "fast-order-item-list": {
+        "general": {
+            "mainMenuItemGeneral": "Fast order line item",
+            "descriptionTextModule": "Manage fast order line items"
+        },
+        "list": {
+            "productNumber": "Product number",
+            "quantity": "Quantity",
+            "sessionId": "Session ID",
+            "comment": "Comment",
+            "createdAt": "Created At",
+            "textHeadline": "Fast order line item",
+            "orderTextHeadline": "Order",
+            "messageEmpty": "No items found"
+        }
+    }
+}

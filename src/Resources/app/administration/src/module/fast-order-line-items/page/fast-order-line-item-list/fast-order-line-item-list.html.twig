@@ -1,0 +1,70 @@
+{% block fast_order_line_item_list %}
+    <sw-page class="fast-order-item-list-list">
+        {% block fast_order_line_item_list_smart_bar_header %}
+            <template #smart-bar-header>
+                {% block fast_order_line_item_list_smart_bar_header_title %}
+                <h2>
+                    {% block fast_order_line_itemlist_list_smart_bar_header_title_text %}
+                        {{ $tc('fast-order-item-list.list.orderTextHeadline') }}
+                        <sw-icon name="regular-chevron-right-xs" />
+                        {{ $tc('fast-order-item-list.list.textHeadline') }}
+                    {% endblock %}
+
+                    {% block fast_order_line_item_list_smart_bar_header_amount %}
+                        <span
+                            v-if="!isLoading"
+                            class="sw-page__smart-bar-amount"
+                        >
+                            ({{ total }})
+                        </span>
+                    {% endblock %}
+                </h2>
+                {% endblock %}
+            </template>
+        {% endblock %}
+
+        {% block fast_order_line_itemlist_list_content %}
+            <template #content>
+                {% block fast_order_line_itemlist_list_content_card %}
+                    {% block fast_order_line_itemlist_list_grid %}
+                        <sw-entity-listing
+                            v-if="items && entitySearchable"
+                            :is-loading="isLoading"
+                            :items="items"
+                            :columns="columns"
+                            :repository="repository"
+                            :sort-by="currentSortBy"
+                            :sort-direction="sortDirection"
+                        >
+                        </sw-entity-listing>
+
+                        {% block fast_order_line_item_list_empty_state %}
+                            <template v-if="!isLoading && !total">
+                                <sw-empty-state
+                                    v-if="isValidTerm(term)"
+                                    :title="$tc('sw-empty-state.messageNoResultTitle')"
+                                >
+                                    <template #default>
+                                        {{ $tc('sw-empty-state.messageNoResultSublineBefore') }}
+                                        <router-link
+                                            class="sw-empty-state__description-link"
+                                            :to="{ name: 'sw.profile.index.searchPreferences' }"
+                                        >
+                                            {{ $tc('sw-empty-state.messageNoResultSublineLink') }}
+                                        </router-link>
+                                        {{ $tc('sw-empty-state.messageNoResultSublineAfter') }}
+                                    </template>
+                                </sw-empty-state>
+
+                                <sw-empty-state
+                                    v-else
+                                    :title="$tc('fast-order-item-list.list.messageEmpty')"
+                                />
+                            </template>
+                        {% endblock %}
+                    {% endblock %}
+                {% endblock %}
+            </template>
+        {% endblock %}
+    </sw-page>
+{% endblock %}
